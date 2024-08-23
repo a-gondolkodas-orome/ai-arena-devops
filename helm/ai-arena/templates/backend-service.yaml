@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.backendName }}
+  labels:
+    {{- include "ai-arena.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: {{ .Values.backendPort }}
+      protocol: TCP
+  selector:
+    app: {{ .Values.backendName }}
