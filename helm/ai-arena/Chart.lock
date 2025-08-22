@@ -2,14 +2,23 @@ dependencies:
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
   version: 14.13.0
-- name: elasticsearch
+- name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 19.21.2
+  version: 20.6.2
+- name: eck-operator
+  repository: https://helm.elastic.co
+  version: 2.14.0
+- name: eck-stack
+  repository: https://helm.elastic.co
+  version: 0.12.1
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
   version: 0.44.0
-- name: kube-prometheus-stack
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 8.5.12
+- name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
-  version: 58.0.0
-digest: sha256:8fd0483afe913ef97785e58a195355e55c7dbd142a06f6b74ae52cfebeece3c4
-generated: "2024-04-09T20:45:38.203997198+02:00"
+  version: 25.29.0
+digest: sha256:fa420108bcbf1f3c80d7224a52a2f1e8b2812bbea10a105888fcd2092e7bdb93
+generated: "2025-02-01T09:35:44.40972981+01:00"

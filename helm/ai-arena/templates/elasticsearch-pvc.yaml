@@ -1,0 +1,19 @@
+{{- if not .Values.localDeployment }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-data-elasticsearch-es-default-0
+  namespace: default
+  finalizers:
+    - kubernetes.io/pvc-protection
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ""
+  selector:
+    matchLabels:
+      component: elasticsearch-data
+{{- end }}

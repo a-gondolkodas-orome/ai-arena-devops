@@ -1,7 +1,8 @@
+{{- if not .Values.localDeployment }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ai-arena-mongodb
+  name: mongodb
   namespace: default
   finalizers:
     - kubernetes.io/pvc-protection
@@ -15,3 +16,4 @@ spec:
   selector:
     matchLabels:
       component: mongodb
+{{- end }}

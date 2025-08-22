@@ -22,6 +22,9 @@ frontendRepo: "ghcr.io/a-gondolkodas-orome/ai-arena-frontend"
 frontendNodePort: 31000
 frontendPort: 80
 
+workerName: "ai-arena-worker"
+workerPort: 3000
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: false
@@ -107,25 +110,70 @@ affinity: {}
 
 mongodb:
   auth:
-    existingSecret: "ai-arena-mongodb"
+    existingSecret: "ai-arena-password"
   persistence:
-    existingClaim: "ai-arena-mongodb"
+    existingClaim: "mongodb"
 
-elasticsearch:
-  global:
-    kibanaEnabled: true
+eck-operator:
+  installCRDs: false
+
+redis:
+  architecture: standalone
+  auth:
+    existingSecret: "ai-arena-password"
   master:
-    masterOnly: false
-    replicaCount: 1
-    extraEnvVars:
-      - name: ELASTICSEARCH_ADVERTISED_HOSTNAME
-        value: "$(MY_POD_NAME)"
-  data:
-    replicaCount: 0
-  coordinating:
-    replicaCount: 0
-  ingest:
-    replicaCount: 0
+    persistence:
+      enabled: false
+
+eck-stack:
+  eck-elasticsearch:
+    nodeSets:
+      - name: default
+        count: 1
+        config:
+          node.store.allow_mmap: false
+        podTemplate:
+          spec:
+            containers:
+              - name: elasticsearch
+                resources:
+                  limits:
+                    memory: 2Gi
+                  requests:
+                    memory: 2Gi
+#            initContainers:
+#              - name: sysctl
+#                securityContext:
+#                  privileged: true
+#                command: ['sysctl', '-w', 'vm.max_map_count=262144']
+#            volumes:
+#              - name: elasticsearch-data
+#                persistentVolumeClaim:
+#                  claimName: elasticsearch-data
+        volumeClaimTemplates: []
+#          - metadata:
+#              name: elasticsearch-data
+#            spec:
+#              accessModes: [ "ReadWriteOnce" ]
+##              storageClassName: "standard"
+#              resources:
+#                requests:
+#                  storage: 3Gi
+
+#  global:
+#    kibanaEnabled: true
+#  master:
+#    masterOnly: false
+#    replicaCount: 1
+#    extraEnvVars:
+#      - name: ELASTICSEARCH_ADVERTISED_HOSTNAME
+#        value: "$(MY_POD_NAME)"
+#  data:
+#    replicaCount: 0
+#  coordinating:
+#    replicaCount: 0
+#  ingest:
+#    replicaCount: 0
 
 fluent-bit:
   config:
@@ -137,25 +185,53 @@ fluent-bit:
           Keep_Log Off
           K8S-Logging.Parser On
           K8S-Logging.Exclude On
+          Buffer_Size 128KB
     outputs: |
       [OUTPUT]
           Name es
           Match kube.*
-          Host ai-arena-elasticsearch
+          Host elasticsearch-es-http
+          HTTP_User elastic
+          HTTP_Passwd ${ES_PASSWORD}
           Logstash_Format On
           Logstash_Prefix_Key kubernetes['container_name']
           Retry_Limit False
           Suppress_Type_Name On
           Replace_Dots On
           Trace_Error On
+          tls On
+          tls.verify Off
   
       [OUTPUT]
           Name es
           Match host.*
-          Host ai-arena-elasticsearch
+          Host elasticsearch-es-http
+          HTTP_User elastic
+          HTTP_Passwd ${ES_PASSWORD}
           Logstash_Format On
           Logstash_Prefix node
           Retry_Limit False
           Suppress_Type_Name On
           Replace_Dots On
           Trace_Error On
+          tls On
+          tls.verify Off
+  env:
+    - name: ES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-es-elastic-user
+          key: elastic
+
+prometheus:
+  server:
+    persistentVolume:
+      existingClaim: "prometheus"
+  alertmanager:
+    enabled: false
+
+
+grafana:
+  persistence:
+    enabled: true
+    existingClaim: "grafana"

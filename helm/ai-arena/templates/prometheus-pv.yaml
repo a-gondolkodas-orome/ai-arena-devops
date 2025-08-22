@@ -1,0 +1,18 @@
+{{- if not .Values.localDeployment }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus
+  labels:
+    component: prometheus
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: block.csi.vultr.com
+    volumeHandle: {{ .Values.prometheus.volumeHandle }} # filled by devops.py at helm install
+    fsType: ext4
+{{- end }}

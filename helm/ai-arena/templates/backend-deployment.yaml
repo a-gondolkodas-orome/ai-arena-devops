@@ -37,16 +37,20 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ .Values.backendRepo }}
+          command: [ "node", "dist/src/index.js",
+                     "--redis-url", "redis://{{ .Release.Name }}-redis-master:6379",
+                     "--mongodb-url", "mongodb://root:$(MONGODB_PASSWORD)@ai-arena-mongodb?retryWrites=true"
+          ]
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.backendPort }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /livez
               port: {{ .Values.backendPort }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /readyz
               port: {{ .Values.backendPort }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -58,10 +62,13 @@ spec:
             - name: MONGODB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ai-arena-mongodb
+                  name: ai-arena-password
                   key: mongodb-root-password
-            - name: MONGODB_URL
-              value: mongodb://root:$(MONGODB_PASSWORD)@ai-arena-mongodb?retryWrites=true
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ai-arena-password
+                  key: redis-password
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

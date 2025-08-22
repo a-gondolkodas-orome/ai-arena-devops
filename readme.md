@@ -1,11 +1,13 @@
 # AI Arena Devops
 
-This script allows you to list and manage Vultr Kubernetes clusters. It can list existing clusters and create a new cluster if a specified cluster does not exist.
+This script allows you and manage an AI Arena Kubernetes deployment on Vultr.
+
 
 ## Prerequisites
 
 - Python 3.x
 - Vultr API Key
+- Helm
 
 ## Initial Setup
 
@@ -22,8 +24,21 @@ source venv/bin/activate   # On Windows, use `venv\Scripts\activate`
 pip install -r requirements.txt
 ```
 
-Running the Script
+3. Add Helm repos
+
+```sh
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add elastic https://helm.elastic.co
+helm repo add fluent https://fluent.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add prometheus https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+## Running the Script
+
 Command Line Arguments
+
 api_key: Your Vultr API key (required).
 --name: Name of the Kubernetes cluster (default: "ai-arena").
 --region: Region of the Kubernetes cluster (default: "ams" for Amsterdam).

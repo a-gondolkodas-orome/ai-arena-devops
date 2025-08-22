@@ -1,0 +1,13 @@
+localDeployment: true
+
+mongodb:
+  persistence:
+    existingClaim: null
+
+prometheus:
+  server:
+    persistentVolume: null
+
+grafana:
+  persistence:
+    existingClaim: null

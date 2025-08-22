@@ -1,0 +1,18 @@
+{{- if not .Values.localDeployment }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb
+  labels:
+    component: mongodb
+spec:
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: block.csi.vultr.com
+    volumeHandle: {{ .Values.mongodb.volumeHandle }} # filled by devops.py at helm install
+    fsType: ext4
+{{- end }}

@@ -1,0 +1,18 @@
+{{- if not .Values.localDeployment }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: elasticsearch-data
+  labels:
+    component: elasticsearch-data
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: block.csi.vultr.com
+    volumeHandle: {{ .Values.elasticsearch.volumeHandle }} # filled by devops.py at helm install
+    fsType: ext4
+{{- end }}

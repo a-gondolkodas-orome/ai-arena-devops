@@ -1,0 +1,18 @@
+{{- if not .Values.localDeployment }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana
+  labels:
+    component: grafana
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: block.csi.vultr.com
+    volumeHandle: {{ .Values.grafana.volumeHandle }} # filled by devops.py at helm install
+    fsType: ext4
+{{- end }}

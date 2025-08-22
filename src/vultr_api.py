@@ -66,28 +66,42 @@ class VultrAPI:
         return self.make_request('POST', '/blocks', payload)['block']
 
     def wait_for_cluster_ready(self, cluster_id):
+        first_check = True
         while True:
             clusters = self.list_kubernetes_clusters()
             cluster = next((cluster for cluster in clusters if cluster['id'] == cluster_id), None)
             if cluster and cluster['status'] == 'active':
-                print(f'Cluster "{cluster_id}" is ready.')
-                break
-            print(f'Waiting for cluster "{cluster_id}" to be ready...')
-            time.sleep(30)
+                print(("" if first_check else "\n") + f'Cluster "{cluster_id}" is ready.')
+                return not first_check
+            print(f'Waiting for cluster "{cluster_id}" to be ready...' if first_check else '.', end='', flush=True)
+            first_check = False
+            time.sleep(10)
 
     def wait_for_block_storage_ready(self, block_id):
+        first_check = True
         while True:
             blocks = self.list_block_storages()
             block = next((block for block in blocks if block['id'] == block_id), None)
             if block and block['status'] == 'active':
-                print(f'Block storage "{block_id}" is ready.')
+                print(("" if first_check else "\n") + f'Block storage "{block_id}" is ready.')
                 break
-            print(f'Waiting for block storage "{block_id}" to be ready...')
-            time.sleep(30)
+            print(f'Waiting for block storage "{block_id}" to be ready...' if first_check else '.', end='', flush=True)
+            first_check = False
+            time.sleep(10)
 
     def get_kubernetes_kubeconfig(self, cluster_id, save_path):
         endpoint = f"/kubernetes/clusters/{cluster_id}/config"
-        kubeconfig_base64 = self.make_request('GET', endpoint)['kube_config']
+        first_check = True
+        while True:
+            try:
+                kubeconfig_base64 = self.make_request('GET', endpoint)['kube_config']
+                print(("" if first_check else "\n") + "Kubeconfig downloaded.")
+                break
+            except ConnectionRefusedError as e:
+                print("Waiting for the cluster config to be ready..." if first_check else '.', end='', flush=True)
+                first_check = False
+                time.sleep(10)
+
         kubeconfig = base64.b64decode(kubeconfig_base64).decode('utf-8')
         if save_path:
             with open(save_path, 'w') as f:
